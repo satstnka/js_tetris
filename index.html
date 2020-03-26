@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tetris</title>
+    <meta charset="utf-8">
+    <link href="css/tetris.css" rel="stylesheet" type="text/css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="js/tetris.js"></script>
+    <script>
+        $(document).ready(prepare);
+    </script>
+  </head>
+  <body>
+    <div id="container">
+      <table id="table"></table>
+      <div>
+        <table id="next_table"></table>
+        <div id="level">Level: 1</div>
+        <div id="score">Score: 0</div>
+        <div id="lines">Lines: 0</div>
+        <div id="message"></div>
+        <table id="buttons">
+          <tr>
+            <td></td>
+            <td><button id="rotate_button">@</button></td>
+            <td></td>
+          </tr>
+          <button id="start_button">Start</button>
+          <tr>
+            <td><button id="left_button">←</button></td>
+            <td><button id="down_button">↓</button></td>
+            <td><button id="right_button">→</button></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
