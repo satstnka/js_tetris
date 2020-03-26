@@ -550,13 +550,15 @@ function proceed() {
 
 // ゲームオーバー
 function finish() {
-     $('#message').html('Game Over!!!');
-     for(var row = blockSize; row < height + blockSize; row++) {
-         for(col = 0; col < width; col++) {
-            var cellId = 'cell' + row + '-' + col;
-            $('#' + cellId).css('background-color', 'grey');
-         }
-     }
+    $('#message').html('Game Over!!!');
+    for(var row = blockSize; row < height + blockSize; row++) {
+        for(col = 0; col < width; col++) {
+            if(cells[row][col] !== '') {
+                var cellId = 'cell' + row + '-' + col;
+                $('#' + cellId).css('background-color', 'grey');
+            }
+        }
+    }
 }
 
 // 左へ移動
@@ -583,36 +585,6 @@ function moveRight() {
         fallingBlock.coordinate[0] = x + 1;
         draw();
     }
-}
-
-// 上下左右 取得
-function getRect(shape) {
-    var top = 3;
-    var bottom = 0;
-    var left = 3;
-    var right = 0;
-
-    for(var i = 0; i < blockSize; i++) {
-        for(var j = 0; j < blockSize; j++) {
-            if(shape[i][j] === 1) {
-                if(i < top) {
-                    top = i;
-                }
-                if(i > bottom) {
-                    bottom = i;
-                }
-                if(j < left) {
-                    left = j;
-                }
-                if(j > right) {
-                    right = j;
-                }
-            }
-        }
-    }
-
-    var rect = {top: top, bottom: bottom, left: left, right: right};
-    return rect;
 }
 
 // 回転
