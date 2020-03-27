@@ -353,22 +353,6 @@ function changeBlock() {
     fallingBlock.coordinate = [middleLeftCol, 0];
     fallingBlock.shapeIndex = 0;
     setNextBlock();
-
-    var result = true;
-
-    var shape = fallingBlock.block.shapes[fallingBlock.shapeIndex];
-
-    for(var i = 0; i < blockSize; i++) {
-        var row = i;
-        for(var j = 0; j < blockSize; j++) {
-            var col = middleLeftCol + j;
-            if(shape[i][j] === 1 && cells[row][col] !== '') {
-                result = false;
-            }
-        }
-    }
-
-    return result;
 }
 
 // 重なり判定
@@ -503,6 +487,25 @@ function arrangeCells() {
     }
 }
 
+// 続行可能判定
+function canContinue() {
+    var result = true;
+
+    var shape = fallingBlock.block.shapes[fallingBlock.shapeIndex];
+
+    for(var i = 0; i < blockSize; i++) {
+        var row = i;
+        for(var j = 0; j < blockSize; j++) {
+            var col = middleLeftCol + j;
+            if(shape[i][j] === 1 && cells[row][col] !== '') {
+                result = false;
+            }
+        }
+    }
+
+    return result;    
+}
+
 // ブロック確定
 function commit() {
     clearInterval(timerId);
@@ -519,11 +522,11 @@ function commit() {
         }
     }
 
-    var result = changeBlock();
+    changeBlock();
     checkCells();
     arrangeCells();
 
-    if(result) {
+    if(canContinue()) {
         timerId = setInterval(proceed, fallingInterval);
     }
     else {
