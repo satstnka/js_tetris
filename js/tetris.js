@@ -9,7 +9,7 @@ var currentBlock = null;
 var nextBlock = null;
 
 var fallingBlock = {
-    coordinate: [0, 0],
+    coordinate: {x: 0, y:0},
     block: null,
     shepeIndex: 0
 };
@@ -350,7 +350,7 @@ function setNextBlock() {
 // ブロック交換
 function changeBlock() {
     fallingBlock.block = nextBlock;
-    fallingBlock.coordinate = [middleLeftCol, 0];
+    fallingBlock.coordinate = {x: middleLeftCol, y: 0};
     fallingBlock.shapeIndex = 0;
     setNextBlock();
 }
@@ -399,9 +399,9 @@ function draw() {
     var shape = block.shapes[fallingBlock.shapeIndex];
     var color = colorMap[block.name];
     for(var i = 0; i < blockSize; i++) {
-        var row = fallingBlock.coordinate[1] + i;
+        var row = fallingBlock.coordinate.y + i;
         for(var j = 0; j < blockSize; j++) {
-            var col = fallingBlock.coordinate[0] + j;
+            var col = fallingBlock.coordinate.x + j;
             if(shape[i][j] == 1) {
                 var cellId = 'cell' + row + '-' + col;
                 $('#' + cellId).css('background-color', color);
@@ -513,9 +513,9 @@ function commit() {
     var block = fallingBlock.block;
     var shape = block.shapes[fallingBlock.shapeIndex];
     for(var i = 0; i < blockSize; i++) {
-        var row = fallingBlock.coordinate[1] + i;
+        var row = fallingBlock.coordinate.y + i;
         for(var j = 0; j < blockSize; j++) {
-            var col = fallingBlock.coordinate[0] + j;
+            var col = fallingBlock.coordinate.x + j;
             if(shape[i][j] == 1) {
                 cells[row][col] = block.name;
             }
@@ -538,15 +538,15 @@ function commit() {
 function proceed() {
     var block = fallingBlock.block;
     var shapeIndex = fallingBlock.shapeIndex;
-    var x = fallingBlock.coordinate[0];
-    var y = fallingBlock.coordinate[1];
+    var x = fallingBlock.coordinate.x;
+    var y = fallingBlock.coordinate.y;
 
     if(isOverlapping(block, shapeIndex, x, y + 1)) {
         commit();
     }
     else {
-        var row = fallingBlock.coordinate[1];
-        fallingBlock.coordinate[1] = row + 1;
+        var row = fallingBlock.coordinate.y;
+        fallingBlock.coordinate.y = row + 1;
         draw();
     }
 }
@@ -568,11 +568,11 @@ function finish() {
 function moveLeft() {
     var block = fallingBlock.block;
     var shapeIndex = fallingBlock.shapeIndex;
-    var x = fallingBlock.coordinate[0];
-    var y = fallingBlock.coordinate[1];
+    var x = fallingBlock.coordinate.x;
+    var y = fallingBlock.coordinate.y;
 
     if(!isOverlapping(block, shapeIndex, x - 1, y)) {
-        fallingBlock.coordinate[0] = x - 1;
+        fallingBlock.coordinate.x = x - 1;
         draw();
     }
 }
@@ -581,11 +581,11 @@ function moveLeft() {
 function moveRight() {
     var block = fallingBlock.block;
     var shapeIndex = fallingBlock.shapeIndex;
-    var x = fallingBlock.coordinate[0];
-    var y = fallingBlock.coordinate[1];
+    var x = fallingBlock.coordinate.x;
+    var y = fallingBlock.coordinate.y;
 
     if(!isOverlapping(block, shapeIndex, x + 1, y)) {
-        fallingBlock.coordinate[0] = x + 1;
+        fallingBlock.coordinate.x = x + 1;
         draw();
     }
 }
@@ -602,8 +602,8 @@ function rotate() {
     var gap2 = 1000;
     for(var i = -2; i <= 2; i++) {
         for(var j = -2; j <= 2; j++) {
-            var currentX = fallingBlock.coordinate[0] + j;
-            var currentY = fallingBlock.coordinate[1] + i;
+            var currentX = fallingBlock.coordinate.x + j;
+            var currentY = fallingBlock.coordinate.y + i;
             if(!isOverlapping(block, nextShapeIndex, currentX, currentY)) {
                 var currentGap1 = Math.abs(i) + Math.abs(j);
                 var currentGap2 = Math.abs(i - j);
@@ -620,8 +620,8 @@ function rotate() {
 
     if(x >= 0 && y >= 0) {
         fallingBlock.shapeIndex = nextShapeIndex;
-        fallingBlock.coordinate[0] = x;
-        fallingBlock.coordinate[1] = y;
+        fallingBlock.coordinate.x = x;
+        fallingBlock.coordinate.y = y;
         draw();
     }
 }
@@ -630,8 +630,8 @@ function rotate() {
 function drop() {
     var block = fallingBlock.block;
     var shapeIndex = fallingBlock.shapeIndex;
-    var x = fallingBlock.coordinate[0];
-    var y = fallingBlock.coordinate[1];
+    var x = fallingBlock.coordinate.x;
+    var y = fallingBlock.coordinate.y;
     var distance = 0;
 
     while(!isOverlapping(block, shapeIndex, x, y + 1)) {
@@ -640,7 +640,7 @@ function drop() {
     }
 
     if(distance > 0) {
-        fallingBlock.coordinate[1] = y;
+        fallingBlock.coordinate.y = y;
     }
     score = score + distance;
     setScore();
