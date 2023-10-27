@@ -1,30 +1,31 @@
 // 変数定義
-var width = 10;
-var height = 20;
-var nextWidth = 4;
-var nextHeight = 4;
-var blockSize = 4;
+const width = 10;
+const height = 20;
+const nextWidth = 4;
+const nextHeight = 4;
+const blockSize = 4;
 
-var currentBlock = null;
-var nextBlock = null;
+let tetris = {
+    nextBlock: null,
 
-var fallingBlock = {
-    coordinate: {x: 0, y:0},
-    block: null,
-    shepeIndex: 0
-};
+    cells: null,
+    middleLeftCol: 0,
+    fallingInterval: null,
+    timerId: 0,
 
-var cells = null;
-var middleLeftCol = 0;
-var fallingInterval = null;
-var timerId = 0;
+    fallingBlock: {
+        coordinate: {x: 0, y:0},
+        block: null,
+        shepeIndex: 0
+    },
 
-var score = 0;
-var level =  1;
-var lines = 0;
+    score: 0,
+    level: 1,
+    lines: 0
+}
 
 // ブロック定義
-blocks = [
+const blocks = [
     {
         name: 'I',
         shapes: [
@@ -241,28 +242,28 @@ var colorMap = {
 
 // スコアセット
 function setScore() {
-    $('#level').html('Level: ' + level);
-    $('#score').html('Score: ' + score);
-    $('#lines').html('Lines: ' + lines);
+    $('#level').html('Level: ' + tetris.level);
+    $('#score').html('Score: ' + tetris.score);
+    $('#lines').html('Lines: ' + tetris.lines);
 }
 
 // リセット
 function reset() {
-    cells = [];
-    for(var row = 0; row < height + blockSize; row++) {
-        var line = [];
-        for(var col = 0; col < width; col++) {
+    tetris.cells = [];
+    for(let row = 0; row < height + blockSize; row++) {
+        let line = [];
+        for(let col = 0; col < width; col++) {
             line.push('');
         }
-        cells.push(line);
+        tetris.cells.push(line);
     }
 
     $('#message').html('');
 
-    score = 0;
-    lines = 0;
-    level = 1;
-    fallingInterval = 1000;
+    tetris.score = 0;
+    tetris.lines = 0;
+    tetris.level = 1;
+    tetris.fallingInterval = 1000;
 
     setScore();
 
@@ -274,12 +275,11 @@ function reset() {
 // 画面準備
 function prepare() {
     reset();
-
-    var diff = width - blockSize;
+    let diff = width - blockSize;
     if(diff % 2 == 1) {
         diff = diff + 1;
     }
-    middleLeftCol = diff / 2;
+    tetris.middleLeftCol = diff / 2;
 
     $('#start_button').click(onClickStart);
     $('#left_button').click(moveLeft);
@@ -296,13 +296,13 @@ function prepare() {
 // セル作成
 function createFieldCells() {
     $('#table').html('');
-    for(var i = 0; i < height; i++) {
-        var row = i + blockSize;
-        var rowId = 'row' + row;
+    for(let i = 0; i < height; i++) {
+        let row = i + blockSize;
+        let rowId = 'row' + row;
         $('#table').append('<tr id="' + rowId + '" class="line"></tr>');
-        for(var j = 0; j < width; j++) {
-            var col = j;
-            var cellId = 'cell' + row + '-' + col;
+        for(let j = 0; j < width; j++) {
+            let col = j;
+            let cellId = 'cell' + row + '-' + col;
             $('#' + rowId).append('<td id="' + cellId + '" class="cell"></tr>');
             $('#' + cellId).css('background-color', 'black');
             $('#' + cellId).html('');
@@ -313,12 +313,12 @@ function createFieldCells() {
 // Next のセル作成
 function createNextCells() {
     $('#next_table').html('');
-    for(var row = 0; row < nextHeight; row++) {
-        var rowId = 'next_row' + row;
+    for(let row = 0; row < nextHeight; row++) {
+        let rowId = 'next_row' + row;
         $('#next_table').append('<tr id="' + rowId + '" class="line"></tr>');
 
-        for(var col = 0; col < nextWidth; col++) {
-            var cellId = 'next_cell' + row + '-' + col;
+        for(let col = 0; col < nextWidth; col++) {
+            let cellId = 'next_cell' + row + '-' + col;
             $('#' + rowId).append('<td id="' + cellId + '" class="cell"></tr>');
             $('#' + cellId).css('background-color', 'black');
         }
@@ -327,16 +327,16 @@ function createNextCells() {
 
 // 次のブロックセット
 function setNextBlock() {
-    var index = Math.floor(blocks.length * Math.random())
-    var block = blocks[index];
-    var color = colorMap[block.name];
-    var shape = block.shapes[0];
+    const index = Math.floor(blocks.length * Math.random())
+    const block = blocks[index];
+    const color = colorMap[block.name];
+    const shape = block.shapes[0];
 
-    nextBlock = block;
+    tetris.nextBlock = block;
 
-    for(var row = 0; row < nextHeight; row++) {
+    for(let row = 0; row < nextHeight; row++) {
         for(col = 0; col < nextWidth; col++) {
-            var id = 'next_cell' + row + '-' + col;
+            const id = 'next_cell' + row + '-' + col;
             if(shape[row][col] > 0) {
                 $('#' + id).css('background-color', color);
             }
@@ -349,30 +349,30 @@ function setNextBlock() {
 
 // ブロック交換
 function changeBlock() {
-    fallingBlock.block = nextBlock;
-    fallingBlock.coordinate = {x: middleLeftCol, y: 0};
-    fallingBlock.shapeIndex = 0;
+    tetris.fallingBlock.block = tetris.nextBlock;
+    tetris.fallingBlock.coordinate = {x: tetris.middleLeftCol, y: 0};
+    tetris.fallingBlock.shapeIndex = 0;
     setNextBlock();
 }
 
 // 重なり判定
 function isOverlapping(block, shapeIndex, x, y) {
-    var overlapping = false;
+    let overlapping = false;
 
-    var shape = block.shapes[shapeIndex];
-    for(var i = 0; i < blockSize; i++) {
-        var row = y + i;
-        for(var j = 0; j < blockSize; j++) {
-            var col = x + j;
+    const shape = block.shapes[shapeIndex];
+    for(let i = 0; i < blockSize; i++) {
+        const row = y + i;
+        for(let j = 0; j < blockSize; j++) {
+            const col = x + j;
 
             if(shape[i][j] == 1) {
-                if(row >= cells.length) {
+                if(row >= tetris.cells.length) {
                     overlapping = true;
                 }
                 else if(col < 0 || col >= width) {
                     overlapping = true;
                 }
-                else if(cells[row][col] !== '') {
+                else if(row >= 0 && tetris.cells[row][col] !== '') {
                     overlapping = true;
                 }
             }
@@ -383,27 +383,27 @@ function isOverlapping(block, shapeIndex, x, y) {
 
 // 描画
 function draw() {
-    for(var row = blockSize; row < height + blockSize; row++) {
-        for(var col = 0; col < width; col++) {
-            var name = cells[row][col];
-            var color = 'black';
+    for(let row = blockSize; row < height + blockSize; row++) {
+        for(let col = 0; col < width; col++) {
+            const name = tetris.cells[row][col];
+            let color = 'black';
             if(name !== '') {
                 color = colorMap[name];
             }
-            var cellId = 'cell' + row + '-' + col;
+            const cellId = 'cell' + row + '-' + col;
             $('#' + cellId).css('background-color', color);
         }
     }
 
-    var block = fallingBlock.block;
-    var shape = block.shapes[fallingBlock.shapeIndex];
-    var color = colorMap[block.name];
-    for(var i = 0; i < blockSize; i++) {
-        var row = fallingBlock.coordinate.y + i;
-        for(var j = 0; j < blockSize; j++) {
-            var col = fallingBlock.coordinate.x + j;
+    const block = tetris.fallingBlock.block;
+    const shape = block.shapes[tetris.fallingBlock.shapeIndex];
+    const color = colorMap[block.name];
+    for(let i = 0; i < blockSize; i++) {
+        const row = tetris.fallingBlock.coordinate.y + i;
+        for(let j = 0; j < blockSize; j++) {
+            const col = tetris.fallingBlock.coordinate.x + j;
             if(shape[i][j] == 1) {
-                var cellId = 'cell' + row + '-' + col;
+                const cellId = 'cell' + row + '-' + col;
                 $('#' + cellId).css('background-color', color);
             }
         }
@@ -414,28 +414,28 @@ function draw() {
 function addScore(count) {
     if(count > 0) {
         draw();
-        lines += count;
+        tetris.lines += count;
         if(count === 1) {
             $('#message').html('Single!');
-            score = score + 40;
+            tetris.score = tetris.score + 40;
         }
         else if(count === 2) {
             $('#message').html('Double!!');
-            score = score + 100;
+            tetris.score = tetris.score + 100;
         }
         else if(count === 3) {
             $('#message').html('Triple!!!');
-            score = score + 300;
+            tetris.score = tetris.score + 300;
         }
         else if(count === 4) {
             $('#message').html('Tetris!!!!');
-            score = score + 1200;
+            tetris.score = tetris.score + 1200;
         }
 
-        var newLevel = (lines - (lines % 5)) / 5 + 1;
-        if(newLevel > level) {
-            level = newLevel;
-            fallingInterval = Math.floor(fallingInterval * 0.9);
+        const newLevel = (tetris.lines - (tetris.lines % 5)) / 5 + 1;
+        if(newLevel > tetris.level) {
+            tetris.level = newLevel;
+            tetris.fallingInterval = Math.floor(tetris.fallingInterval * 0.9);
         }
         setScore();
     }
@@ -446,19 +446,19 @@ function addScore(count) {
 
 // セルの確認
 function checkCells() {
-    var count = 0;
-    for(var row = 0; row < height + blockSize; row++) {
-        var flag = true;
-        for(var col = 0; col < width; col++) {
-            if(cells[row][col] === '') {
+    let count = 0;
+    for(let row = 0; row < height + blockSize; row++) {
+        let flag = true;
+        for(let col = 0; col < width; col++) {
+            if(tetris.cells[row][col] === '') {
                 flag = false;
             }
         }
 
         if(flag) {
             count++;
-            for(var col = 0; col < width; col++) {
-                cells[row][col] = '';
+            for(let col = 0; col < width; col++) {
+                tetris.cells[row][col] = '';
             }
         }
     }
@@ -467,19 +467,19 @@ function checkCells() {
 
 // セルの並べ替え
 function arrangeCells() {
-    var line = height + blockSize - 1;
-    for(var row = height + blockSize - 1; row >= 0; row--) {
-        var isBlank = true;
-        for(var col = 0; col < width; col++) {
-            if(cells[row][col] !== '') {
+    let line = height + blockSize - 1;
+    for(let row = height + blockSize - 1; row >= 0; row--) {
+        let isBlank = true;
+        for(let col = 0; col < width; col++) {
+            if(tetris.cells[row][col] !== '') {
                 isBlank = false;
             }
         }
         if(!isBlank) {
             if(row < line) {
                 for(var col = 0; col < width; col++) {
-                    cells[line][col] = cells[row][col];
-                    cells[row][col] = '';
+                    tetris.cells[line][col] = tetris.cells[row][col];
+                    tetris.cells[row][col] = '';
                 }
             }
             line--;
@@ -489,15 +489,15 @@ function arrangeCells() {
 
 // 続行可能判定
 function canContinue() {
-    var result = true;
+    let result = true;
 
-    var shape = fallingBlock.block.shapes[fallingBlock.shapeIndex];
+    const shape = tetris.fallingBlock.block.shapes[tetris.fallingBlock.shapeIndex];
 
-    for(var i = 0; i < blockSize; i++) {
-        var row = i;
-        for(var j = 0; j < blockSize; j++) {
-            var col = middleLeftCol + j;
-            if(shape[i][j] === 1 && cells[row][col] !== '') {
+    for(let i = 0; i < blockSize; i++) {
+        const row = i;
+        for(let j = 0; j < blockSize; j++) {
+            const col = tetris.middleLeftCol + j;
+            if(shape[i][j] === 1 && tetris.cells[row][col] !== '') {
                 result = false;
             }
         }
@@ -508,16 +508,16 @@ function canContinue() {
 
 // ブロック確定
 function commit() {
-    clearInterval(timerId);
+    clearInterval(tetris.timerId);
 
-    var block = fallingBlock.block;
-    var shape = block.shapes[fallingBlock.shapeIndex];
-    for(var i = 0; i < blockSize; i++) {
-        var row = fallingBlock.coordinate.y + i;
-        for(var j = 0; j < blockSize; j++) {
-            var col = fallingBlock.coordinate.x + j;
+    const block = tetris.fallingBlock.block;
+    const shape = block.shapes[tetris.fallingBlock.shapeIndex];
+    for(let i = 0; i < blockSize; i++) {
+        const row = tetris.fallingBlock.coordinate.y + i;
+        for(let j = 0; j < blockSize; j++) {
+            const col = tetris.fallingBlock.coordinate.x + j;
             if(shape[i][j] == 1) {
-                cells[row][col] = block.name;
+                tetris.cells[row][col] = block.name;
             }
         }
     }
@@ -527,7 +527,7 @@ function commit() {
     arrangeCells();
 
     if(canContinue()) {
-        timerId = setInterval(proceed, fallingInterval);
+        tetris.timerId = setInterval(proceed, tetris.fallingInterval);
     }
     else {
         finish();
@@ -536,17 +536,17 @@ function commit() {
 
 // 処理を進める
 function proceed() {
-    var block = fallingBlock.block;
-    var shapeIndex = fallingBlock.shapeIndex;
-    var x = fallingBlock.coordinate.x;
-    var y = fallingBlock.coordinate.y;
+    const block = tetris.fallingBlock.block;
+    const shapeIndex = tetris.fallingBlock.shapeIndex;
+    const x = tetris.fallingBlock.coordinate.x;
+    const y = tetris.fallingBlock.coordinate.y;
 
     if(isOverlapping(block, shapeIndex, x, y + 1)) {
         commit();
     }
     else {
-        var row = fallingBlock.coordinate.y;
-        fallingBlock.coordinate.y = row + 1;
+        const row = tetris.fallingBlock.coordinate.y;
+        tetris.fallingBlock.coordinate.y = row + 1;
         draw();
     }
 }
@@ -554,59 +554,55 @@ function proceed() {
 // ゲームオーバー
 function finish() {
     $('#message').html('Game Over!!!');
-    for(var row = blockSize; row < height + blockSize; row++) {
-        for(col = 0; col < width; col++) {
-            if(cells[row][col] !== '') {
-                var cellId = 'cell' + row + '-' + col;
+    for(let row = blockSize; row < height + blockSize; row++) {
+        for(let col = 0; col < width; col++) {
+            if(tetris.cells[row][col] !== '') {
+                const cellId = 'cell' + row + '-' + col;
                 $('#' + cellId).css('background-color', 'grey');
             }
         }
     }
 }
 
-// 左へ移動
-function moveLeft() {
-    var block = fallingBlock.block;
-    var shapeIndex = fallingBlock.shapeIndex;
-    var x = fallingBlock.coordinate.x;
-    var y = fallingBlock.coordinate.y;
+function move(dx, dy) {
+    const block = tetris.fallingBlock.block;
+    const shapeIndex = tetris.fallingBlock.shapeIndex;
+    const x = tetris.fallingBlock.coordinate.x;
+    const y = tetris.fallingBlock.coordinate.y;
 
-    if(!isOverlapping(block, shapeIndex, x - 1, y)) {
-        fallingBlock.coordinate.x = x - 1;
+    if(!isOverlapping(block, shapeIndex, x + dx, y + dy)) {
+        tetris.fallingBlock.coordinate.x = x + dx;
         draw();
     }
+}
+
+// 左へ移動
+function moveLeft() {
+    move(-1, 0);
 }
 
 // 右へ移動
 function moveRight() {
-    var block = fallingBlock.block;
-    var shapeIndex = fallingBlock.shapeIndex;
-    var x = fallingBlock.coordinate.x;
-    var y = fallingBlock.coordinate.y;
-
-    if(!isOverlapping(block, shapeIndex, x + 1, y)) {
-        fallingBlock.coordinate.x = x + 1;
-        draw();
-    }
+    move(1, 0);
 }
 
 // 回転
 function rotate() {
-    var block = fallingBlock.block;
-    var shapeIndex = fallingBlock.shapeIndex;
-    var nextShapeIndex = (shapeIndex + 1) % 4;
+    const block = tetris.fallingBlock.block;
+    const shapeIndex = tetris.fallingBlock.shapeIndex;
+    const nextShapeIndex = (shapeIndex + 1) % 4;
 
-    var x = -1;
-    var y = -1;
-    var gap1 = 1000;
-    var gap2 = 1000;
-    for(var i = -2; i <= 2; i++) {
-        for(var j = -2; j <= 2; j++) {
-            var currentX = fallingBlock.coordinate.x + j;
-            var currentY = fallingBlock.coordinate.y + i;
+    let x = -1;
+    let y = -1;
+    let gap1 = 1000;
+    let gap2 = 1000;
+    for(let i = -2; i <= 2; i++) {
+        for(let j = -2; j <= 2; j++) {
+            const currentX = tetris.fallingBlock.coordinate.x + j;
+            const currentY = tetris.fallingBlock.coordinate.y + i;
             if(!isOverlapping(block, nextShapeIndex, currentX, currentY)) {
-                var currentGap1 = Math.abs(i) + Math.abs(j);
-                var currentGap2 = Math.abs(i - j);
+                const currentGap1 = Math.abs(i) + Math.abs(j);
+                const currentGap2 = Math.abs(i - j);
                 if(currentGap1 < gap1 
                         || (currentGap1 == gap2 && currentGap2 < gap2)) {
                     x = currentX;
@@ -619,20 +615,20 @@ function rotate() {
     }
 
     if(x >= 0 && y >= 0) {
-        fallingBlock.shapeIndex = nextShapeIndex;
-        fallingBlock.coordinate.x = x;
-        fallingBlock.coordinate.y = y;
+        tetris.fallingBlock.shapeIndex = nextShapeIndex;
+        tetris.fallingBlock.coordinate.x = x;
+        tetris.fallingBlock.coordinate.y = y;
         draw();
     }
 }
 
 // ブロックを落とす
 function drop() {
-    var block = fallingBlock.block;
-    var shapeIndex = fallingBlock.shapeIndex;
-    var x = fallingBlock.coordinate.x;
-    var y = fallingBlock.coordinate.y;
-    var distance = 0;
+    const block = tetris.fallingBlock.block;
+    const shapeIndex = tetris.fallingBlock.shapeIndex;
+    let x = tetris.fallingBlock.coordinate.x;
+    let y = tetris.fallingBlock.coordinate.y;
+    let distance = 0;
 
     while(!isOverlapping(block, shapeIndex, x, y + 1)) {
         y += 1;
@@ -640,9 +636,9 @@ function drop() {
     }
 
     if(distance > 0) {
-        fallingBlock.coordinate.y = y;
+        tetris.fallingBlock.coordinate.y = y;
     }
-    score = score + distance;
+    tetris.score = tetris.score + distance;
     setScore();
     draw();
 
@@ -652,14 +648,14 @@ function drop() {
 
 // 開始ボタンクリック
 function onClickStart() {
-    var name = $('#start_button').html();
+    const name = $('#start_button').html();
     if(name === 'Start') {
         changeBlock();        
-        timerId = setInterval(proceed, fallingInterval);
+        tetris.timerId = setInterval(proceed, tetris.fallingInterval);
         $('#start_button').html('Reset');
     }
     else if(name === 'Reset') {
-        clearInterval(timerId);
+        clearInterval(tetris.timerId);
         reset();
         $('#start_button').html('Start');
     }
@@ -680,5 +676,3 @@ function onKey(code) {
         drop();
     }
 }
-
-
